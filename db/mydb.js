@@ -1,116 +1,95 @@
-/* eslint-disable no-useless-catch */
-import { MongoClient, ObjectId } from "mongodb";
-import dotenv from 'dotenv';
+import { MongoClient} from "mongodb";
+import dotenv from "dotenv";
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-export const connectDatabase = async () => {
-  try {
-    const client = new MongoClient(MONGODB_URI, {
+class MyMongoDB {
+  constructor() {
+    this.client = new MongoClient(MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    await client.connect();
-    const db = client.db();
-
-    return { client, db };
-  } catch (error) {
-    throw error;
   }
-};
 
-export const connectDel = async () => {
-  try {
-    const client = new MongoClient(MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    await client.connect();
-    const db = client.db();
-
-    return db;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const submitReservation = async (
-  name,
-  phone,
-  date,
-  time,
-  people,
-  special
-) => {
-  try {
-    const { db, client } = await connectDatabase();
-    // Insert reservation into the database
-    await db.collection("reservations").insertOne({
-      name: name,
-      phone: phone,
-      date: date,
-      time: time,
-      people: people,
-      special: special,
-    });
-
-    client.close();
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const getReservations = async (name, phone) => {
-  try {
-    const { db, client } = await connectDatabase();
-
-    // Query reservations based on name and phone
-    const reservations = await db
-      .collection("reservations")
-      .find({ name, phone })
-      .toArray();
-
-    client.close();
-    return reservations;
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const updateReservation = async (db, name, phone, updatedData) => {
-  try {
-    const reservations = db.collection("reservations");
-    const filter = { name, phone };
-    const updateDoc = {
-      $set: updatedData,
-    };
-
-    const result = await reservations.updateOne(filter, updateDoc);
-
-    if (result.modifiedCount > 0) {
-      return true; // Indicates success
-    } else {
-      return false; // No documents were updated
+  async connectDatabase() {
+    try {
+      await this.client.connect();
+      this.db = this.client.db();
+    } catch (error) {
+      throw error;
     }
-  } catch (error) {
-    throw error;
   }
-};
 
+  async connectDel() {
+    try {
+      await this.client.connect();
+      this.db = this.client.db();
+    } catch (error) {
+      throw error;
+    }
+  }
 
+  async submitReservation(name, phone, date, time, people, special) {
+    try {
+      await this.connectDatabase();
+      await this.db.collection("reservations").insertOne({
+        name: name,
+        phone: phone,
+        date: date,
+        time: time,
+        people: people,
+        special: special,
+      });
+      this.client.close();
+    } catch (error) {
+      throw error;
+    }
+  }
 
+  async getReservations(name, phone) {
+    try {
+      await this.connectDatabase();
+      const reservations = await this.db
+        .collection("reservations")
+        .find({ name, phone })
+        .toArray();
+      this.client.close();
+      return reservations;
+    } catch (error) {
+      throw error;
+    }
+  }
 
-export const deleteReservation = async (db, name, phone) => {
-  const client = db.client;
-  const reservations = db.collection("reservations");
+  async updateReservation(name, phone, updatedData) {
+    try {
+      await this.connectDatabase();
+      const reservations = this.db.collection("reservations");
+      const filter = { name, phone };
+      const updateDoc = {
+        $set: updatedData,
+      };
+      const result = await reservations.updateOne(filter, updateDoc);
+      this.client.close();
+      return result.modifiedCount > 0;
+    } catch (error) {
+      throw error;
+    }
+  }
 
-  const filter = { name, phone };
+  async deleteReservation(name, phone) {
+    try {
+      await this.connectDatabase();
+      const reservations = this.db.collection("reservations");
+      const filter = { name, phone };
+      const result = await reservations.deleteOne(filter);
+      this.client.close();
+      return result.deletedCount;
+    } catch (error) {
+      throw error;
+    }
+  }
+}
 
-  const result = await reservations.deleteOne(filter);
-
-  client.close(); 
-
-  return result.deletedCount;
-};
-
+const mydb = new MyMongoDB();
+export default mydb;
