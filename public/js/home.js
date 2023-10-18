@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-  var landingContainer = document.getElementById("background");
-  var landingImage = document.getElementById("background");
+  let landingContainer = document.getElementById("background");
+  let landingImage = document.getElementById("background");
 
   // Add a click event listener to the landing image
   landingImage.addEventListener("click", function () {
