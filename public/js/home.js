@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   var landingContainer = document.getElementById("background");
-  var landingImage = document.getElementById("background");
+  var landingImage = document.getElementById("background"); // It looks like you are fetching the same element twice with the same ID. Try to use different IDs or check if you meant to use classes instead.
 
   // Add a click event listener to the landing image
   landingImage.addEventListener("click", function () {
@@ -76,7 +76,7 @@ const scrollto = (el) => {
 
   if (!header.classList.contains("header-scrolled")) {
     offset -= 20;
-  }
+  } //There's an arbitrary offset of 20 applied when the header isn't scrolled. Maybe you can add a comment or make it a named constant to provide context.
 
   let elementPos = select(el).offsetTop;
   window.scrollTo({
