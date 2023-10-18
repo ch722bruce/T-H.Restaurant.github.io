@@ -1,5 +1,5 @@
 import express from "express";
-import { purchaseGiftCard, checkGiftCardBalance } from "../db/mydbuser.js";
+import mydbuser from "../db/mydbuser.js";
 import { MongoClient } from "mongodb";
 const routeruser = express.Router();
 
@@ -9,7 +9,6 @@ dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 
 const client = new MongoClient(MONGODB_URI);
-
 
 // Purchase Gift Card
 routeruser.post("/purchase-gift-card", async (req, res) => {
@@ -22,7 +21,12 @@ routeruser.post("/purchase-gift-card", async (req, res) => {
     console.log("cvv:", cvv);
     console.log("Amount:", amount);
 
-    const result = await purchaseGiftCard(name, cardNumber, cvv, amount);
+    const result = await mydbuser.purchaseGiftCard(
+      name,
+      cardNumber,
+      cvv,
+      amount
+    );
 
     res.status(201).json(result.ops[0]);
   } catch (error) {
@@ -35,7 +39,7 @@ routeruser.post("/check-balance", async (req, res) => {
   const { name, cardNumber } = req.body;
 
   try {
-    const result = await checkGiftCardBalance(name, cardNumber);
+    const result = await mydbuser.checkGiftCardBalance(name, cardNumber);
 
     if (result && result.balance !== undefined) {
       res.status(200).json(result);
@@ -49,4 +53,3 @@ routeruser.post("/check-balance", async (req, res) => {
 });
 
 export default routeruser;
-

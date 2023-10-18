@@ -1,23 +1,8 @@
 import express from "express";
-import {
-  getReservations,
-  submitReservation,
-  updateReservation,
-  deleteReservation,
-  connectDatabase,
-  connectDel,
-} from "../db/mydb.js";
-import { MongoClient } from "mongodb";
+import mydb from "../db/mydb.js";
 const router = express.Router();
-import dotenv from "dotenv";
-dotenv.config();
-
-const MONGODB_URI = process.env.MONGODB_URI;
-
-const client = new MongoClient(MONGODB_URI);
 
 // Handle form submission
-
 router.post("/submit-reservation", async (req, res) => {
   try {
     const { name, phone, date, time, people, special } = req.body;
@@ -30,7 +15,7 @@ router.post("/submit-reservation", async (req, res) => {
     console.log("People:", people);
     console.log("Special:", special);
 
-    await submitReservation(name, phone, date, time, people, special);  
+    await mydb.submitReservation(name, phone, date, time, people, special);
     res.status(201).send("Reservation submitted successfully.");
   } catch (error) {
     console.error(error);
@@ -43,7 +28,7 @@ router.get("/reservation-details", async (req, res) => {
   try {
     const { name, phone } = req.query;
     console.log("Give data from the mago:");
-    const reservations = await getReservations(name, phone);
+    const reservations = await mydb.getReservations(name, phone);
     res.json(reservations);
   } catch (error) {
     console.error(error);
@@ -56,9 +41,8 @@ router.put("/update-reservation", async (req, res) => {
   const { name, phone, date, time, people, special } = req.body;
 
   try {
-    const { db, client } = await connectDatabase();
     console.log("Update data from the mago:");
-    await updateReservation(db, name, phone, {
+    await mydb.updateReservation(name, phone, {
       date,
       time,
       people,
@@ -72,15 +56,13 @@ router.put("/update-reservation", async (req, res) => {
   }
 });
 
-
 // Delete Reservation
 router.post("/delete-reservation", async (req, res) => {
   const { name, phone } = req.body;
 
   try {
-    const db = await connectDel(); // Get the database object
     console.log("Delete data from the mago:");
-    const deletedCount = await deleteReservation(db, name, phone);
+    const deletedCount = await mydb.deleteReservation(name, phone);
 
     if (deletedCount > 0) {
       res.status(200).send("Reservation deleted successfully");
@@ -92,6 +74,5 @@ router.post("/delete-reservation", async (req, res) => {
     res.status(500).send("Internal server error");
   }
 });
-
 
 export default router;
